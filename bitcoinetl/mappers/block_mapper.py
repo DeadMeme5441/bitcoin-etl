@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 
+from datetime import datetime
 from bitcoinetl.domain.block import BtcBlock
 from bitcoinetl.mappers.transaction_mapper import BtcTransactionMapper
 
@@ -34,23 +35,24 @@ class BtcBlockMapper(object):
 
     def json_dict_to_block(self, json_dict):
         block = BtcBlock()
-        block.hash = json_dict.get('hash')
-        block.size = json_dict.get('size')
-        block.stripped_size = json_dict.get('strippedsize')
-        block.weight = json_dict.get('weight')
-        block.number = json_dict.get('height')
-        block.version = json_dict.get('version')
-        block.merkle_root = json_dict.get('merkleroot')
-        block.timestamp = json_dict.get('time')
+        block.hash = json_dict.get("hash")
+        block.size = json_dict.get("size")
+        block.stripped_size = json_dict.get("strippedsize")
+        block.weight = json_dict.get("weight")
+        block.number = json_dict.get("height")
+        block.version = json_dict.get("version")
+        block.merkle_root = json_dict.get("merkleroot")
+        block.timestamp = json_dict.get("time")
         # bitcoin and all clones except zcash return integer nonce, zcash return hex string
-        block.nonce = to_hex(json_dict.get('nonce'))
-        block.bits = json_dict.get('bits')
+        block.nonce = to_hex(json_dict.get("nonce"))
+        block.bits = json_dict.get("bits")
 
-        raw_transactions = json_dict.get('tx')
+        raw_transactions = json_dict.get("tx")
         if raw_transactions is not None and len(raw_transactions) > 0:
             if isinstance(raw_transactions[0], dict):
                 block.transactions = [
-                    self.transaction_mapper.json_dict_to_transaction(tx, block, idx) for idx, tx in enumerate(raw_transactions)
+                    self.transaction_mapper.json_dict_to_transaction(tx, block, idx)
+                    for idx, tx in enumerate(raw_transactions)
                 ]
             else:
                 # Transaction hashes
@@ -62,19 +64,21 @@ class BtcBlockMapper(object):
 
     def block_to_dict(self, block):
         return {
-            'type': 'block',
-            'hash': block.hash,
-            'size': block.size,
-            'stripped_size': block.stripped_size,
-            'weight': block.weight,
-            'number': block.number,
-            'version': block.version,
-            'merkle_root': block.merkle_root,
-            'timestamp': block.timestamp,
-            'nonce': block.nonce,
-            'bits': block.bits,
-            'coinbase_param': block.coinbase_param,
-            'transaction_count': len(block.transactions)
+            "type": "block",
+            "hash": block.hash,
+            "size": block.size,
+            "stripped_size": block.stripped_size,
+            "weight": block.weight,
+            "number": block.number,
+            "version": block.version,
+            "merkle_root": block.merkle_root,
+            "timestamp": datetime.utcfromtimestamp(block.timestamp).strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+            "nonce": block.nonce,
+            "bits": block.bits,
+            "coinbase_param": block.coinbase_param,
+            "transaction_count": len(block.transactions),
         }
 
 
@@ -85,6 +89,6 @@ def to_hex(val):
     if isinstance(val, str):
         return val
     elif isinstance(val, int):
-        return format(val, 'x')
+        return format(val, "x")
     else:
         return val
