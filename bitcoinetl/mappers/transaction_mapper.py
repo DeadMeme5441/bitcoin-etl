@@ -84,7 +84,9 @@ class BtcTransactionMapper(object):
             "lock_time": transaction.lock_time,
             "block_number": transaction.block_number,
             "block_hash": transaction.block_hash,
-            "block_timestamp": transaction.block_timestamp,
+            "block_timestamp": datetime.utcfromtimestamp(
+                transaction.block_timestamp
+            ).strftime("%Y-%m-%d %H:%M:%S"),
             "is_coinbase": transaction.is_coinbase,
             "index": transaction.index,
             "inputs": self.transaction_input_mapper.inputs_to_dicts(transaction.inputs),
@@ -108,7 +110,9 @@ class BtcTransactionMapper(object):
         transaction.lock_time = dict.get("lock_time")
         transaction.block_number = dict.get("block_number")
         transaction.block_hash = dict.get("block_hash")
-        transaction.block_timestamp = dict.get("block_timestamp")
+        transaction.block_timestamp = datetime.strptime(
+            dict.get("block_timestamp"), "%Y-%m-%d %H:%M:%S"
+        ).timestamp()
         transaction.is_coinbase = dict.get("is_coinbase")
         transaction.index = dict.get("index")
 

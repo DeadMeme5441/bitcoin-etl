@@ -7,8 +7,8 @@ def get_item_exporter(output):
         item_exporter = KafkaItemExporter(
             output,
             item_type_to_topic_mapping={
-                "block": "blocks",
-                "transaction": "transactions",
+                "block": "BITCOIN_blocks",
+                "transaction": "BITCOIN_transactions",
             },
         )
 
