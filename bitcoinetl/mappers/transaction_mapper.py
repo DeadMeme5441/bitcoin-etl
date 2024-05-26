@@ -95,9 +95,9 @@ class BtcTransactionMapper(object):
             ),
             "input_count": len(transaction.inputs),
             "output_count": len(transaction.outputs),
-            "input_value": float(transaction.calculate_input_value()),
-            "output_value": float(transaction.calculate_output_value()),
-            "fee": float(transaction.calculate_fee()),
+            "input_value": float(float(transaction.calculate_input_value()) / 1e8),
+            "output_value": float(float(transaction.calculate_output_value()) / 1e8),
+            "fee": transaction.calculate_fee(),
         }
         return result
 
