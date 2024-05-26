@@ -61,24 +61,12 @@ class BtcTransaction(object):
 
     def calculate_input_value(self):
         return float(
-            float(
-                sum([input.value for input in self.inputs if input.value is not None])
-            )
-            / 1e8
+            sum([input.value for input in self.inputs if input.value is not None])
         )
 
     def calculate_output_value(self):
         return float(
-            float(
-                sum(
-                    [
-                        output.value
-                        for output in self.outputs
-                        if output.value is not None
-                    ]
-                )
-            )
-            / 1e8
+            sum([output.value for output in self.outputs if output.value is not None])
         )
 
     def calculate_fee(self):

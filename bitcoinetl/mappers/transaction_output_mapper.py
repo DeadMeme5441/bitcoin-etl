@@ -28,7 +28,7 @@ class BtcTransactionOutputMapper(object):
 
     def vout_to_outputs(self, vout):
         outputs = []
-        for item in (vout or []):
+        for item in vout or []:
             output = self.json_dict_to_output(item)
             outputs.append(output)
         return outputs
@@ -36,22 +36,25 @@ class BtcTransactionOutputMapper(object):
     def json_dict_to_output(self, json_dict):
         output = BtcTransactionOutput()
 
-        output.index = json_dict.get('n')
-        output.addresses = json_dict.get('addresses')
-        output.txinwitness = json_dict.get('txinwitness')
-        output.value = bitcoin_to_satoshi(json_dict.get('value'))
-        if 'scriptPubKey' in json_dict:
-            script_pub_key = json_dict.get('scriptPubKey')
-            output.script_asm = script_pub_key.get('asm')
-            output.script_hex = script_pub_key.get('hex')
-            output.required_signatures = script_pub_key.get('reqSigs')
-            output.type = script_pub_key.get('type')
-            if script_pub_key.get('addresses') is not None and len(script_pub_key.get('addresses')) > 0:
-                output.addresses = script_pub_key.get('addresses')
-            elif script_pub_key.get('address') is None:
+        output.index = json_dict.get("n")
+        output.addresses = json_dict.get("addresses")
+        output.txinwitness = json_dict.get("txinwitness")
+        output.value = float(json_dict.get("value"))
+        if "scriptPubKey" in json_dict:
+            script_pub_key = json_dict.get("scriptPubKey")
+            output.script_asm = script_pub_key.get("asm")
+            output.script_hex = script_pub_key.get("hex")
+            output.required_signatures = script_pub_key.get("reqSigs")
+            output.type = script_pub_key.get("type")
+            if (
+                script_pub_key.get("addresses") is not None
+                and len(script_pub_key.get("addresses")) > 0
+            ):
+                output.addresses = script_pub_key.get("addresses")
+            elif script_pub_key.get("address") is None:
                 output.addresses = []
             else:
-                output.addresses = [script_pub_key.get('address')]
+                output.addresses = [script_pub_key.get("address")]
 
         return output
 
@@ -59,13 +62,13 @@ class BtcTransactionOutputMapper(object):
         result = []
         for output in outputs:
             item = {
-                'index': output.index,
-                'script_asm': output.script_asm,
-                'script_hex': output.script_hex,
-                'required_signatures': output.required_signatures,
-                'type': output.type,
-                'addresses': output.addresses,
-                'value': output.value
+                "index": output.index,
+                "script_asm": output.script_asm,
+                "script_hex": output.script_hex,
+                "required_signatures": output.required_signatures,
+                "type": output.type,
+                "addresses": output.addresses,
+                "value": output.value,
             }
             result.append(item)
         return result
@@ -74,13 +77,13 @@ class BtcTransactionOutputMapper(object):
         result = []
         for dict in dicts:
             input = BtcTransactionOutput()
-            input.index = dict.get('index')
-            input.script_asm = dict.get('script_asm')
-            input.script_hex = dict.get('script_hex')
-            input.required_signatures = dict.get('required_signatures')
-            input.type = dict.get('type')
-            input.addresses = dict.get('addresses')
-            input.value = dict.get('value')
+            input.index = dict.get("index")
+            input.script_asm = dict.get("script_asm")
+            input.script_hex = dict.get("script_hex")
+            input.required_signatures = dict.get("required_signatures")
+            input.type = dict.get("type")
+            input.addresses = dict.get("addresses")
+            input.value = dict.get("value")
 
             result.append(input)
         return result
