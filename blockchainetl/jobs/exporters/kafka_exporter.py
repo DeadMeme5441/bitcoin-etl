@@ -36,6 +36,13 @@ class KafkaItemExporter:
     def export_item(self, item):
         item_type = item.get("type")
         if item_type is not None and item_type in self.item_type_to_topic_mapping:
+            if item_type == "transaction":
+                if len(json.dumps(item.get("inputs"))) >= 1048580:
+                    item["inputs"] = []
+                    logging.warning("Transaction inputs are too large, skipping them.")
+                if len(json.dumps(item.get("outputs"))) >= 1048580:
+                    item["outputs"] = []
+                    logging.warning("Transaction outputs are too large, skipping them.")
             data = json.dumps(item).encode("utf-8")
             logging.debug(data)
             return self.producer.send(

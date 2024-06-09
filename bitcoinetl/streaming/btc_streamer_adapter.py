@@ -103,15 +103,17 @@ class BtcStreamerAdapter:
                     "The number of transactions is wrong " + str(transactions)
                 )
 
-            for t in enriched_transactions:
-                for input in t["inputs"]:
-                    if len(json.dumps(input)) > 1048580:
-                        enriched_transactions.remove(t)
-                for output in t["outputs"]:
-                    if len(json.dumps(output)) > 1048580:
-                        enriched_transactions.remove(t)
-
             transactions = enriched_transactions
+
+        for t in transactions:
+            for input in t["inputs"]:
+                if len(json.dumps(input)) >= 1048580:
+                    print("Input too large, removing transaction")
+                    enriched_transactions.remove(t)
+            for output in t["outputs"]:
+                if len(json.dumps(output)) >= 1048580:
+                    print("Output too large, removing transaction")
+                    enriched_transactions.remove(t)
 
         logging.info("Exporting with " + type(self.item_exporter).__name__)
 
