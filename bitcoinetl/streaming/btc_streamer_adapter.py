@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 
+import json
 import logging
 
 from bitcoinetl.enumeration.chain import Chain
@@ -34,13 +35,14 @@ from blockchainetl.jobs.exporters.in_memory_item_exporter import InMemoryItemExp
 
 class BtcStreamerAdapter:
     def __init__(
-            self,
-            bitcoin_rpc,
-            item_exporter=ConsoleItemExporter(),
-            chain=Chain.BITCOIN,
-            batch_size=2,
-            enable_enrich=True,
-            max_workers=5):
+        self,
+        bitcoin_rpc,
+        item_exporter=ConsoleItemExporter(),
+        chain=Chain.BITCOIN,
+        batch_size=2,
+        enable_enrich=True,
+        max_workers=5,
+    ):
         self.bitcoin_rpc = bitcoin_rpc
         self.chain = chain
         self.btc_service = BtcService(bitcoin_rpc, chain)
@@ -58,7 +60,9 @@ class BtcStreamerAdapter:
 
     def export_all(self, start_block, end_block):
         # Export blocks and transactions
-        blocks_and_transactions_item_exporter = InMemoryItemExporter(item_types=['block', 'transaction'])
+        blocks_and_transactions_item_exporter = InMemoryItemExporter(
+            item_types=["block", "transaction"]
+        )
 
         blocks_and_transactions_job = ExportBlocksJob(
             start_block=start_block,
@@ -69,16 +73,18 @@ class BtcStreamerAdapter:
             item_exporter=blocks_and_transactions_item_exporter,
             chain=self.chain,
             export_blocks=True,
-            export_transactions=True
+            export_transactions=True,
         )
         blocks_and_transactions_job.run()
 
-        blocks = blocks_and_transactions_item_exporter.get_items('block')
-        transactions = blocks_and_transactions_item_exporter.get_items('transaction')
+        blocks = blocks_and_transactions_item_exporter.get_items("block")
+        transactions = blocks_and_transactions_item_exporter.get_items("transaction")
 
         if self.enable_enrich:
             # Enrich transactions
-            enriched_transactions_item_exporter = InMemoryItemExporter(item_types=['transaction'])
+            enriched_transactions_item_exporter = InMemoryItemExporter(
+                item_types=["transaction"]
+            )
 
             enrich_transactions_job = EnrichTransactionsJob(
                 transactions_iterable=transactions,
@@ -86,15 +92,28 @@ class BtcStreamerAdapter:
                 bitcoin_rpc=self.bitcoin_rpc,
                 max_workers=self.max_workers,
                 item_exporter=enriched_transactions_item_exporter,
-                chain=self.chain
+                chain=self.chain,
             )
             enrich_transactions_job.run()
-            enriched_transactions = enriched_transactions_item_exporter.get_items('transaction')
+            enriched_transactions = enriched_transactions_item_exporter.get_items(
+                "transaction"
+            )
             if len(enriched_transactions) != len(transactions):
-                raise ValueError('The number of transactions is wrong ' + str(transactions))
+                raise ValueError(
+                    "The number of transactions is wrong " + str(transactions)
+                )
+
+            for t in enriched_transactions:
+                for input in t["inputs"]:
+                    if len(json.dumps(input)) > 1048580:
+                        enriched_transactions.remove(t)
+                for output in t["outputs"]:
+                    if len(json.dumps(output)) > 1048580:
+                        enriched_transactions.remove(t)
+
             transactions = enriched_transactions
 
-        logging.info('Exporting with ' + type(self.item_exporter).__name__)
+        logging.info("Exporting with " + type(self.item_exporter).__name__)
 
         all_items = blocks + transactions
 
@@ -104,7 +123,7 @@ class BtcStreamerAdapter:
 
     def calculate_item_ids(self, items):
         for item in items:
-            item['item_id'] = self.item_id_calculator.calculate(item)
+            item["item_id"] = self.item_id_calculator.calculate(item)
 
     def close(self):
         self.item_exporter.close()
