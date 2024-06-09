@@ -29,6 +29,12 @@ class ConsoleItemExporter:
 
     def export_items(self, items):
         for item in items:
+            if len(json.dumps(item.get("inputs"))) >= 1048580:
+                print("inputs too large")
+                continue
+            if len(json.dumps(item.get("outputs"))) >= 1048580:
+                print("outputs too large")
+                continue
             self.export_item(item)
 
     def export_item(self, item):
